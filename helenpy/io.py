@@ -6,45 +6,19 @@ from __future__ import print_function
 import gzip
 import numpy as np
 import os
+import requests
+import time
+from tqdm import tqdm
 import urllib
 import urllib.request as urlreq
-from tqdm import tqdm
-import requests
-
-def _download_file(filepath, urlreq):
-	# request file	
-	length = int(urlreq.headers.get('content-length', 0))
-	print("Requested file url: {} length: {} local path: {}".format(urlreq, length, filepath))
-	# write file
-	with open(filepath, "wb") as file:		
-		for data in tqdm(urlreq.iter_content(32*1024), total=length, unit='B', unit_scale=True):
-			file.write(data)
-	print('Successfully downloaded', filepath, length, 'bytes.')
-	return filepath
-
-def download_file(filename, work_directory, source_url):
-	if not os.path.exists(work_directory):
-		os.makedirs(work_directory)
-	filepath = os.path.join(work_directory, filename)
-	url = urllib.parse.urljoin(source_url, filename)		
-	urlreq = requests.get(url, stream=True)
-	if not os.path.exists(filepath):
-		return _download_file(filepath, urlreq)
-	else:
-		url_length = int(urlreq.headers.get('content-length', 0))
-		statinfo = os.stat(filepath)
-		if (statinfo.st_size != url_length):
-			_download_file(filepath, urlreq)
-	return filepath
 
 
-def read_images(filename, work_directory, source_url):
+def read_images_nparray(filepaths):
 	images = []
-	filepath = download_file(filename, work_directory, source_url)
 	return images
 
 
-def read_labels(filename, work_directory, source_url):
+def read_labels(filepath):
 	labels = []
 	return labels
 
@@ -69,7 +43,7 @@ def read_label_dataset(filenames, work_directory, source_url):
 	return label_dataset
 
 
-def read_dataset(work_directory, source_url="http://www.ifp.illinois.edu/~vuongle2/helen/data/"):
+def read_dataset(work_directory, source_url):
 
 	TRAIN_IMAGE_FILENAMES = ["train_1.zip", "train_2.zip", "train_3.zip", "train_4.zip"]
 	TRAIN_LABEL_FILENAMES = ["trainnames.txt"]
